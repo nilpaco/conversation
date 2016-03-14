@@ -1,0 +1,12 @@
+conversation-dev-mysql:
+  container_name: conversation-dev-mysql
+  image: mysql:5.7.9
+  # volumes:
+  #   - ~/volumes/jhipster/Conversation/dev-mysql/:/var/lib/mysql/
+  environment:
+    - MYSQL_USER=root
+    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    - MYSQL_DATABASE=conversation
+  ports:
+    - "3306:3306"
+  command: mysqld --lower_case_table_names=1

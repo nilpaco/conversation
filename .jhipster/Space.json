@@ -1,0 +1,29 @@
+{
+  "relationships": [
+    {
+      "relationshipId": 1,
+      "relationshipName": "conversation",
+      "otherEntityName": "conversation",
+      "relationshipType": "one-to-many",
+      "otherEntityRelationshipName": "space"
+    },
+    {
+      "relationshipId": 2,
+      "relationshipName": "user",
+      "otherEntityName": "user",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "email"
+    }
+  ],
+  "fields": [
+    {
+      "fieldId": 1,
+      "fieldName": "name",
+      "fieldType": "String"
+    }
+  ],
+  "changelogDate": "20160314093339",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "no"
+}
