@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.conversation.domain.Conversation;
 import com.conversation.domain.Message;
 import com.conversation.repository.ConversationRepository;
+import com.conversation.repository.MessageRepository;
 import com.conversation.repository.search.ConversationSearchRepository;
 import com.conversation.web.rest.util.HeaderUtil;
 import com.conversation.web.rest.util.PaginationUtil;
@@ -44,6 +45,9 @@ public class ConversationResource {
     @Inject
     private ConversationSearchRepository conversationSearchRepository;
 
+    @Inject
+    private MessageRepository messageRepository;
+
     /**
      * POST  /conversations -> Create a new conversation.
      */
@@ -56,6 +60,9 @@ public class ConversationResource {
         if (conversation.getId() != null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert("conversation", "idexists", "A new conversation cannot already have an ID")).body(null);
         }
+
+        /*Dado id space, tiene conversacio con usuario que creo.*/
+
         Conversation result = conversationRepository.save(conversation);
         conversationSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/conversations/" + result.getId()))
@@ -92,7 +99,7 @@ public class ConversationResource {
     public ResponseEntity<List<Conversation>> getAllConversations(Pageable pageable)
         throws URISyntaxException {
         log.debug("REST request to get a page of Conversations");
-        Page<Conversation> page = conversationRepository.findAll(pageable);
+        Page<Conversation> page = conversationRepository.findByUserIsCurrentUser(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/conversations");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
@@ -158,4 +165,44 @@ public class ConversationResource {
 
         return new ResponseEntity<>(conversation.getMessages(), HttpStatus.OK);
     }
+    @Transactional
+    @RequestMapping(value = "/conversations/{id}/usermessages",
+        method = RequestMethod.GET,
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    @Timed
+    public ResponseEntity<List<Message>> findByUserIsCurrentUserAndSpace(@PathVariable Long id) {
+        log.debug("REST request to get Messages from User in Space: {}", id);
+        Conversation conversation = conversationRepository.findOne(id);
+
+        List<Message> messages = messageRepository.findByConversation(id);
+
+        if(conversation==null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(messages, HttpStatus.OK);
+    }
+
+    /**
+     * POST  /conversations -> Create a new conversation.
+     */
+    @RequestMapping(value = "/conversations",
+        method = RequestMethod.POST,
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    @Timed
+    public ResponseEntity<Conversation> createConversationAndMessage(@RequestBody Conversation conversation) throws URISyntaxException {
+        log.debug("REST request to save Conversation : {}", conversation);
+        if (conversation.getId() != null) {
+            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert("conversation", "idexists", "A new conversation cannot already have an ID")).body(null);
+        }
+
+        /*Dado id space, tiene conversacio con usuario que creo.*/
+
+        Conversation result = conversationRepository.save(conversation);
+        conversationSearchRepository.save(result);
+        return ResponseEntity.created(new URI("/api/conversations/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert("conversation", result.getId().toString()))
+            .body(result);
+    }
+
 }

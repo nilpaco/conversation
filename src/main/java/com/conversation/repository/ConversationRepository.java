@@ -2,7 +2,10 @@ package com.conversation.repository;
 
 import com.conversation.domain.Conversation;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -12,6 +15,10 @@ import java.util.List;
 public interface ConversationRepository extends JpaRepository<Conversation,Long> {
 
     @Query("select conversation from Conversation conversation where conversation.user.login = ?#{principal.username}")
-    List<Conversation> findByUserIsCurrentUser();
+    Page<Conversation> findByUserIsCurrentUser(Pageable pageable);
+
+
+    @Query("select conversation from Conversation conversation where conversation.user.login = ?#{principal.username} and conversation.space.id = :id")
+    Page<Conversation> findByUserIsCurrentUserAndConversation(@Param("id") Long id, Pageable pageable);
 
 }

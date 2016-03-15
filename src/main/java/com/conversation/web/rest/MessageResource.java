@@ -34,13 +34,13 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 public class MessageResource {
 
     private final Logger log = LoggerFactory.getLogger(MessageResource.class);
-        
+
     @Inject
     private MessageRepository messageRepository;
-    
+
     @Inject
     private MessageSearchRepository messageSearchRepository;
-    
+
     /**
      * POST  /messages -> Create a new message.
      */
@@ -96,7 +96,7 @@ public class MessageResource {
                 .collect(Collectors.toList()), HttpStatus.OK);
         }
         log.debug("REST request to get a page of Messages");
-        Page<Message> page = messageRepository.findAll(pageable); 
+        Page<Message> page = messageRepository.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/messages");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
@@ -146,4 +146,5 @@ public class MessageResource {
             .stream(messageSearchRepository.search(queryStringQuery(query)).spliterator(), false)
             .collect(Collectors.toList());
     }
+
 }
