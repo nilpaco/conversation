@@ -82,17 +82,11 @@ class="hidden-xs"                        translate="conversationApp.conversation
 <div class="row">
     <div class="col-sm-3">
         <div class="list-group">
-            <a ng-click="load(conversation.id)" class="list-group-item" ng-repeat="conversation in conversations track by conversation.id">
+            <a ui-sref="conversation.detail({id:conversation.id})" class="list-group-item" ng-repeat="conversation in conversations track by conversation.id">
                 {{conversation.name}}
                 {{conversation.id}}
             </a>
         </div>
-
-    </div>
-    <div class="col-sm-9">
-        Detail
-        <div ng-repeat="message in messages">
-            {{message.text}}
-        </div>
+        <div class="col-sm-9" ui-view="messages"></div>
     </div>
 </div>

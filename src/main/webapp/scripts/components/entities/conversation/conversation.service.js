@@ -12,6 +12,7 @@ angular.module('conversationApp')
                 }
             },
             'update': { method:'PUT' },
-            'getMessagesFromConversation': {method: 'GET', isArray: true, url: 'api/conversations/:id/messages'}
+            'getMessagesFromConversation': {method: 'GET', isArray: true, url: 'api/conversations/:id/messages'},
+            'postMessageFromConversation': {method: 'POST', isArray: false, url: 'api/conversation/:id/messages'}
         });
     });

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('conversationApp')
-    .controller('ConversationController', function ($scope, $state, Conversation, ConversationSearch, ParseLinks) {
+    .controller('ConversationController', function ($scope, $state, Conversation, ConversationSearch, ParseLinks, Message) {
 
         $scope.conversations = [];
         $scope.predicate = 'id';
@@ -41,13 +41,6 @@ angular.module('conversationApp')
                 name: null,
                 id: null
             };
-        };
-
-        $scope.messages=[];
-        $scope.load = function (id) {
-            Conversation.getMessagesFromConversation({id: id}, function(result) {
-                $scope.messages = result;
-            });
         };
 
     });

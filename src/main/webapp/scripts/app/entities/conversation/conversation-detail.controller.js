@@ -2,7 +2,7 @@
 
 angular.module('conversationApp')
     .controller('ConversationDetailController', function ($scope, $rootScope, $stateParams, entity, Conversation, Message, Space, User) {
-        $scope.conversation = entity;
+        $scope.messages = entity;
         $scope.load = function (id) {
             Conversation.get({id: id}, function(result) {
                 $scope.conversation = result;
@@ -12,5 +12,15 @@ angular.module('conversationApp')
             $scope.conversation = result;
         });
         $scope.$on('$destroy', unsubscribe);
+
+        $scope.load = function (id) {
+            Conversation.getMessagesFromConversation({id: id}, function(result) {
+                $scope.messages = result;
+            });
+        };
+        $scope.sendMessage = function(){
+            Conversation.postMessageFromConversation({id: $stateParams.id}, {text: $scope.text2});
+        }
+
 
     });

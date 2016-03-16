@@ -14,7 +14,7 @@ angular.module('conversationApp')
                     'content@': {
                         templateUrl: 'scripts/app/entities/conversation/conversations.html',
                         controller: 'ConversationController'
-                    }
+                    },
                 },
                 resolve: {
                     translatePartialLoader: ['$translate', '$translatePartialLoader', function ($translate, $translatePartialLoader) {
@@ -25,14 +25,14 @@ angular.module('conversationApp')
                 }
             })
             .state('conversation.detail', {
-                parent: 'entity',
-                url: '/conversation/{id}',
+                parent: 'conversation',
+                url: '/{id}',
                 data: {
                     authorities: ['ROLE_USER'],
                     pageTitle: 'conversationApp.conversation.detail.title'
                 },
                 views: {
-                    'content@': {
+                    'messages@conversation': {
                         templateUrl: 'scripts/app/entities/conversation/conversation-detail.html',
                         controller: 'ConversationDetailController'
                     }
@@ -43,7 +43,7 @@ angular.module('conversationApp')
                         return $translate.refresh();
                     }],
                     entity: ['$stateParams', 'Conversation', function($stateParams, Conversation) {
-                        return Conversation.get({id : $stateParams.id});
+                        return Conversation.getMessagesFromConversation({id : $stateParams.id});
                     }]
                 }
             })
