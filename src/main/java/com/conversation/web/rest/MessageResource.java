@@ -1,9 +1,16 @@
 package com.conversation.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.conversation.domain.Conversation;
 import com.conversation.domain.Message;
+import com.conversation.domain.Space;
+import com.conversation.domain.User;
+import com.conversation.repository.ConversationRepository;
 import com.conversation.repository.MessageRepository;
+import com.conversation.repository.SpaceRepository;
+import com.conversation.repository.UserRepository;
 import com.conversation.repository.search.MessageSearchRepository;
+import com.conversation.security.SecurityUtils;
 import com.conversation.web.rest.util.HeaderUtil;
 import com.conversation.web.rest.util.PaginationUtil;
 import org.slf4j.Logger;
@@ -40,6 +47,15 @@ public class MessageResource {
 
     @Inject
     private MessageSearchRepository messageSearchRepository;
+
+    @Inject
+    private ConversationRepository conversationRepository;
+
+    @Inject
+    private UserRepository userRepository;
+
+    @Inject
+    private SpaceRepository spaceRepository;
 
     /**
      * POST  /messages -> Create a new message.
@@ -146,5 +162,59 @@ public class MessageResource {
             .stream(messageSearchRepository.search(queryStringQuery(query)).spliterator(), false)
             .collect(Collectors.toList());
     }
+
+    /**
+     * POST  /messages -> Create a new message and conversation.
+     */
+    @RequestMapping(value = "/space/{id}/message",
+        method = RequestMethod.POST,
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    @Timed
+    public ResponseEntity<Message> createMessageAndConversation(@PathVariable Long id, @RequestBody Message message) throws URISyntaxException {
+
+        User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
+        Space space = spaceRepository.findOne(id);
+
+        Conversation conversation = new Conversation();
+        conversation.setUser(user);
+        conversation.setSpace(space);
+        conversation.setName(space.getName());
+
+        Conversation result1 = conversationRepository.save(conversation);
+
+        message.setConversation(conversation);
+        message.setUser(user);
+        Message result = messageRepository.save(message);
+
+        messageSearchRepository.save(result);
+
+        return ResponseEntity.created(new URI("/api/space/" + result1.getId() +"/message/"))
+            .headers(HeaderUtil.createEntityCreationAlert("message", result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * POST  /messages -> Create a new message.
+     */
+    @RequestMapping(value = "/conversation/{id}/messages",
+        method = RequestMethod.POST,
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    @Timed
+    public ResponseEntity<Message> createMessageFromConversation(@PathVariable Long id, @RequestBody Message message) throws URISyntaxException {
+        Conversation conversation = conversationRepository.findOne(id);
+        User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
+        log.debug("REST request to save Message : {}", message);
+        if (message.getId() != null) {
+            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert("message", "idexists", "A new message cannot already have an ID")).body(null);
+        }
+        message.setConversation(conversation);
+        message.setUser(user);
+        Message result = messageRepository.save(message);
+        messageSearchRepository.save(result);
+        return ResponseEntity.created(new URI("/api/messages/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert("message", result.getId().toString()))
+            .body(result);
+    }
+
 
 }

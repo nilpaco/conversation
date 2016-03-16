@@ -183,26 +183,4 @@ public class ConversationResource {
         return new ResponseEntity<>(messages, HttpStatus.OK);
     }
 
-    /**
-     * POST  /conversations -> Create a new conversation.
-     */
-    @RequestMapping(value = "/conversations",
-        method = RequestMethod.POST,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-    @Timed
-    public ResponseEntity<Conversation> createConversationAndMessage(@RequestBody Conversation conversation) throws URISyntaxException {
-        log.debug("REST request to save Conversation : {}", conversation);
-        if (conversation.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert("conversation", "idexists", "A new conversation cannot already have an ID")).body(null);
-        }
-
-        /*Dado id space, tiene conversacio con usuario que creo.*/
-
-        Conversation result = conversationRepository.save(conversation);
-        conversationSearchRepository.save(result);
-        return ResponseEntity.created(new URI("/api/conversations/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert("conversation", result.getId().toString()))
-            .body(result);
-    }
-
 }
